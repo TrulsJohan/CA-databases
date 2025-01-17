@@ -1,13 +1,5 @@
 import jwt from 'jsonwebtoken';
 
-const SECRET = 'shhhh';
-const token = jwt.sign(
-    {
-        email: 'ludvig@noroff.no',
-        username: 'ludvig',
-        avatar: 'example.com/image.png',
-    },
-    SECRET
-);
-
+const SECRET = 'topsecret';
+const token = jwt.sign({ email: 'truls@gmail.com', username: 'truls' }, SECRET);
 console.log(token);
