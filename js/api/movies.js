@@ -10,9 +10,9 @@ export async function getMovies() {
             throw new Error(`Failed to fetch posts: ${res.status}`);
         }
         const data = await res.json();
-        console.log(data);
+        return data;
     } catch (error) {
-        console.error('Error fetching posts:', error);
+        console.error('Error fetching movies:', error);
     }
 }
 
@@ -30,7 +30,7 @@ export async function getMovieId() {
             throw new Error(`Failed to fetch movie: ${res.status} ${res.statusText}`);
         }
         const data = await res.json();
-        console.log('Movie data:', data);
+        return data;
     } catch (error) {
         console.error('Error fetching movie:', error.message);
     }
