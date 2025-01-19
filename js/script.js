@@ -1,6 +1,8 @@
 import { getMovies } from "./api/movies.js";
 import { getMovieId } from "./api/movies.js";
 import { login } from "./api/login.js";
+import { deleteMovie } from './api/delete.js';
+import { addMovie } from "./api/post.js";
 //import { getData } from "./api/auth.js";
 
 const moviesContainer = document.getElementById('moviesContainer');
@@ -20,11 +22,25 @@ async function displayMovies() {
                     <h3>${movie.title}</h3>
                     <p>${movie.description}</p>
                     <img src="${movie.img_url}" alt="${movie.title}" style="width: 100px; height: 100px;"/>
+                    <button class="deleteBtn" data-id="${movie.id}">Delete Movie</button>
                 </div>
             `;
             })
             .join('');
         moviesContainer.innerHTML = movies;
+        const deleteBtn = document.querySelectorAll('.deleteBtn');
+        deleteBtn.forEach((button) => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                if (id) {
+                    deleteMovie(id);
+                    /*localStorage.setItem('movie_id', id);
+                    console.log(`Movie ID ${id} saved to localStorage.`);*/
+                } else {
+                    console.error('Movie ID not found.');
+                }
+            });
+        });
     } catch (error) {
         console.error('Error fetching movies:', error);
     }
@@ -46,17 +62,36 @@ async function displayMovie() {
                     <p>${movie.description}</p>
                     <img src="${movie.img_url}" alt="${movie.title}" style="width: 100px; height: 100px;"/>
                     <p>Posted by: ${movie.username}</p>
+                    <button class="deleteBtn" data-id="${movie.id}">Delete Movie</button>
                 </div>
             `;
             })
             .join('');
         moviesContainer.innerHTML = movies;
+        const deleteBtn = document.querySelectorAll('.deleteBtn');
+        deleteBtn.forEach((button) => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                if (id) {
+                    deleteMovie(id);
+                    /*localStorage.setItem('movie_id', id);
+                    console.log(`Movie ID ${id} saved to localStorage.`);*/
+                } else {
+                    console.error('Movie ID not found.');
+                }
+            });
+        });
     } catch (error) {
         console.error('Error fetching movies:', error);
     }
 }
 
-document.querySelector('form').addEventListener('submit', (event) => {
+document.getElementById('addMovieForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    addMovie();
+});
+
+document.getElementById('loginForm').addEventListener('submit', (event) => {
     event.preventDefault();
     login();
 });

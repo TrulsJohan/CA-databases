@@ -87,6 +87,41 @@ app.get('/movies/:user_id', async (req, res) => {
     }
 });
 
+app.delete('/movies/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        const [result] = await connection.execute(
+            'DELETE FROM movies WHERE id = ?',
+            [id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Movie not found' });
+        }
+        res.json({ message: `Movie with ID ${id} deleted successfully` });
+    } catch (error) {
+        console.error('Error deleting movie:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.post('/movies/:id', async (req, res) => {
+    const userId = req.params.id;
+    const { title, description, img_url } = req.body;
+    if (!title || !description || !img_url) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+    try {
+        const [result] = await connection.execute(
+            'INSERT INTO movies (title, description, img_url, user_id) VALUES (?, ?, ?, ?)',
+            [title, description, img_url, userId]
+        );
+        res.status(201).json({ message: 'Movie added successfully!', movieId: result.insertId });
+    } catch (error) {
+        console.error('Error adding movie:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 app.listen(port, () => {
     console.log('Server started on port: ', port);
 });
