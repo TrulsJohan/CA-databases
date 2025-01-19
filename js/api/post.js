@@ -11,7 +11,7 @@ export async function addMovie() {
         throw new Error('Could not find user ID');
     }
     try {
-        const res = await fetch(`http://localhost:3000/movies/${userId}`, {
+        const res = await fetch(`http://localhost:3000/movies/user/${userId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, description, img_url: imgUrl }),

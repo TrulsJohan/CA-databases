@@ -65,7 +65,7 @@ app.get('/movies', async (req, res) => {
     }
 });
 
-app.get('/movies/:user_id', async (req, res) => {
+app.get('/movies/user/:user_id', async (req, res) => {
     const userId = parseInt(req.params.user_id, 10);
     if (isNaN(userId)) {
         return res.status(400).json({ message: 'Invalid user ID. User ID must be a number.' });
@@ -104,7 +104,7 @@ app.delete('/movies/:id', async (req, res) => {
     }
 });
 
-app.post('/movies/:id', async (req, res) => {
+app.post('/movies/user/:user_id', async (req, res) => {
     const userId = req.params.id;
     const { title, description, img_url } = req.body;
     if (!title || !description || !img_url) {
@@ -119,6 +119,27 @@ app.post('/movies/:id', async (req, res) => {
     } catch (error) {
         console.error('Error adding movie:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.get('/movies/:movie_id', async (req, res) => {
+    const movie_id = Number(req.params.movie_id); // Correctly use movie_id here
+    try {
+        const [rows] = await connection.execute(
+            'SELECT * FROM movies WHERE id = ?',
+            [movie_id]
+        );
+
+        if (rows.length === 0) {
+            return res
+                .status(404)
+                .json({ message: `No movie found with ID ${movie_id}.` }); // Correctly use movie_id here
+        }
+
+        res.json({ message: 'Movie retrieved successfully.', data: rows[0] });
+    } catch (error) {
+        console.error('Error retrieving movie by ID:', error);
+        res.status(500).json({ message: 'Internal server error.' });
     }
 });
 

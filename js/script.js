@@ -23,6 +23,7 @@ async function displayMovies() {
                     <p>${movie.description}</p>
                     <img src="${movie.img_url}" alt="${movie.title}" style="width: 100px; height: 100px;"/>
                     <button class="deleteBtn" data-id="${movie.id}">Delete Movie</button>
+                    <button class="editBtn" data-id="${movie.id}">Edit Movie</button>
                 </div>
             `;
             })
@@ -36,6 +37,18 @@ async function displayMovies() {
                     deleteMovie(id);
                     /*localStorage.setItem('movie_id', id);
                     console.log(`Movie ID ${id} saved to localStorage.`);*/
+                } else {
+                    console.error('Movie ID not found.');
+                }
+            });
+        });
+        const editBtn = document.querySelectorAll('.editBtn');
+        editBtn.forEach((button) => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                if (id) {
+                    localStorage.setItem('movie_id', id);
+                    window.location.href = "./edit.html";
                 } else {
                     console.error('Movie ID not found.');
                 }
@@ -63,7 +76,7 @@ async function displayMovie() {
                     <img src="${movie.img_url}" alt="${movie.title}" style="width: 100px; height: 100px;"/>
                     <p>Posted by: ${movie.username}</p>
                     <button class="deleteBtn" data-id="${movie.id}">Delete Movie</button>
-                </div>
+                    <button class="editBtn" data-id="${movie.id}">Edit Movie</button>
             `;
             })
             .join('');
@@ -76,6 +89,18 @@ async function displayMovie() {
                     deleteMovie(id);
                     /*localStorage.setItem('movie_id', id);
                     console.log(`Movie ID ${id} saved to localStorage.`);*/
+                } else {
+                    console.error('Movie ID not found.');
+                }
+            });
+        });
+        const editBtn = document.querySelectorAll('.editBtn');
+        editBtn.forEach((button) => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                if (id) {
+                    localStorage.setItem('movie_id', id);
+                    window.location.href = './edit.html';
                 } else {
                     console.error('Movie ID not found.');
                 }
