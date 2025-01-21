@@ -18,19 +18,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer')) {
-            return res.status(401).json({ message: 'Authorization header missing or malformed' });
-        }
-        const token = authHeader.split(' ')[1];
-        const payload = jwt.verify(token, SECRET);
-        res.json({ payload });
-    } catch (error) {
-        res.status(401).json({ message: 'Invalid or expired token' });
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ message: 'Token not provided' });
     }
-});
+    jwt.verify(token, SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+}
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -41,7 +42,8 @@ app.post('/login', async (req, res) => {
         );
         if (rows.length > 0) {
             const user = rows[0];
-            const token = jwt.sign({ id: user.id, username: user.username }, SECRET);
+            const token = jwt.sign(
+                { id: user.id, username: user.username }, SECRET, { expiresIn: '3h', });
             res.json({ message: 'success', accessToken: token, user_id: user.id });
         } else {
             res.status(401).json({ message: 'invalid credentials' });
@@ -52,7 +54,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/movies', async (req, res) => {
+app.get('/movies',authenticateToken, async (req, res) => {
     try {
         const [movies] = await connection.execute('SELECT * FROM movies');
         if (movies.length === 0) {
@@ -65,7 +67,7 @@ app.get('/movies', async (req, res) => {
     }
 });
 
-app.get('/movies/user/:user_id', async (req, res) => {
+app.get('/movies/user/:user_id', authenticateToken, async (req, res) => {
     const userId = parseInt(req.params.user_id, 10);
     if (isNaN(userId)) {
         return res.status(400).json({ message: 'Invalid user ID. User ID must be a number.' });
@@ -87,7 +89,7 @@ app.get('/movies/user/:user_id', async (req, res) => {
     }
 });
 
-app.delete('/movies/:id', async (req, res) => {
+app.delete('/movies/:id', authenticateToken, async (req, res) => {
     const id = req.params.id;
     try {
         const [result] = await connection.execute(
@@ -104,8 +106,8 @@ app.delete('/movies/:id', async (req, res) => {
     }
 });
 
-app.post('/movies/user/:user_id', async (req, res) => {
-    const userId = req.params.id;
+app.post('/movies/user/:user_id', authenticateToken, async (req, res) => {
+    const userId = req.params.user_id;
     const { title, description, img_url } = req.body;
     if (!title || !description || !img_url) {
         return res.status(400).json({ message: 'All fields are required' });
@@ -122,7 +124,7 @@ app.post('/movies/user/:user_id', async (req, res) => {
     }
 });
 
-app.get('/movies/:movie_id', async (req, res) => {
+app.get('/movies/:movie_id', authenticateToken, async (req, res) => {
     const movie_id = Number(req.params.movie_id);
     try {
         const [rows] = await connection.execute(
@@ -142,7 +144,7 @@ app.get('/movies/:movie_id', async (req, res) => {
     }
 });
 
-app.put('/movies/update/:movie_id/:user_id', async (req, res)=> {
+app.put('/movies/update/:movie_id/:user_id', authenticateToken, async (req, res)=> {
     const movie_id = Number(req.params.movie_id);
     const user_id = Number(req.params.user_id);
     const { title, description, img_url } = req.body;
