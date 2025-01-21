@@ -123,7 +123,7 @@ app.post('/movies/user/:user_id', async (req, res) => {
 });
 
 app.get('/movies/:movie_id', async (req, res) => {
-    const movie_id = Number(req.params.movie_id); // Correctly use movie_id here
+    const movie_id = Number(req.params.movie_id);
     try {
         const [rows] = await connection.execute(
             'SELECT * FROM movies WHERE id = ?',
@@ -133,13 +133,41 @@ app.get('/movies/:movie_id', async (req, res) => {
         if (rows.length === 0) {
             return res
                 .status(404)
-                .json({ message: `No movie found with ID ${movie_id}.` }); // Correctly use movie_id here
+                .json({ message: `No movie found with ID ${movie_id}.` });
         }
-
         res.json({ message: 'Movie retrieved successfully.', data: rows[0] });
     } catch (error) {
         console.error('Error retrieving movie by ID:', error);
         res.status(500).json({ message: 'Internal server error.' });
+    }
+});
+
+app.put('/movies/update/:movie_id/:user_id', async (req, res)=> {
+    const movie_id = Number(req.params.movie_id);
+    const user_id = Number(req.params.user_id);
+    const { title, description, img_url } = req.body;
+    if(!title || !description || !img_url) {
+        return res.status(400).json({ message: 'All fields (title, description, img_url) are required.'});
+    }
+    try {
+        const [rows] = await connection.execute(
+            'SELECT * FROM movies WHERE id = ?',
+            [movie_id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ messege: 'No movie found with ID ${movie_id}.' });
+        }
+        const [result] = await connection.execute(
+            'UPDATE movies SET title = ?, description = ?, img_url = ?, user_id = ? WHERE id = ?',
+            [title, description, img_url, user_id, movie_id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ message: `Failed to update movie with ID ${movie_id}.`});
+        }
+        res.status(200).json({ message: `Movie with ID ${movie_id} updated successfully.`});
+    } catch (error) {
+        console.error('Error retrieving movie by ID:', error);
+        res.status(500).json({ messege: 'Internal server error.' });
     }
 });
 
