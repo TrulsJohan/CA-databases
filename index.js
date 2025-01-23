@@ -15,7 +15,7 @@ const port = process.env.PORT || 3000;
 const SECRET = process.env.SECRET || 'topsecret';
 const app = express();
 
-app.use(cors({ origin: 'http://127.0.0.1:5501' }));
+app.use(cors({ origin: 'http://127.0.0.1:5501/index.html' }));
 app.use(express.json());
 
 function authenticateToken(req, res, next) {
