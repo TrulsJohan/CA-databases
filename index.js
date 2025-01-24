@@ -45,6 +45,47 @@ function authenticateToken(req, res, next) {
     });
 }
 
+app.post('/registration', async (req, res) => {
+    const { username, password } = req.body;
+
+    // Validate the input
+    if (!username || !password) {
+        return res
+            .status(400)
+            .json({ message: 'Username and password are required' });
+    }
+
+    // Check if the username already exists
+    try {
+        const [rows] = await pool.execute(
+            'SELECT * FROM users WHERE username = ?',
+            [username]
+        );
+
+        if (rows.length > 0) {
+            return res
+                .status(400)
+                .json({ message: 'Username is already taken' });
+        }
+
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Insert the new user into the database
+        await pool.execute(
+            'INSERT INTO users (username, password) VALUES (?, ?)',
+            [username, hashedPassword]
+        );
+
+        // Send a success response
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error('Error during registration:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
