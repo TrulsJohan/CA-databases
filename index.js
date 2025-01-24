@@ -25,7 +25,7 @@ async function initializeDbConnection() {
     }
 }
 
-const SECRET = process.env.SECRET || 'topsecret';
+const SECRET = process.env.SECRET || 'your-jwt-secret';
 const app = express();
 
 app.use(
