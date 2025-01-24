@@ -44,11 +44,16 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Login Route (with hashed password check)
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    if (!pool)
-        return res.status(500).json({ message: 'Database not initialized.' });
+
+    if (!username || !password) {
+        return res
+            .status(400)
+            .json({ message: 'Username and password required.' });
+    }
+
+    console.log('Login attempt:', username);
 
     try {
         const [rows] = await pool.execute(
@@ -58,10 +63,14 @@ app.post('/login', async (req, res) => {
 
         if (rows.length > 0) {
             const user = rows[0];
+            console.log('User found:', user);
 
             const passwordMatch = await bcrypt.compare(password, user.password);
-            if (!passwordMatch)
+            console.log('Password match:', passwordMatch);
+
+            if (!passwordMatch) {
                 return res.status(401).json({ message: 'Invalid credentials' });
+            }
 
             const token = jwt.sign(
                 { id: user.id, username: user.username },
@@ -69,13 +78,13 @@ app.post('/login', async (req, res) => {
                 { expiresIn: '3h' }
             );
 
-            res.json({
+            return res.json({
                 message: 'Success',
                 accessToken: token,
                 user_id: user.id,
             });
         } else {
-            res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {
         console.error('Error during login:', error);
