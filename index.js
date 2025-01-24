@@ -28,7 +28,14 @@ async function initializeDbConnection() {
 const SECRET = process.env.SECRET || 'topsecret';
 const app = express();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: '*', // This allows all origins, but it's better to limit to your frontend's URL for production
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+);
+
 app.use(express.json());
 
 // Middleware for token authentication
