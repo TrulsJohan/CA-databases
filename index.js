@@ -28,13 +28,7 @@ async function initializeDbConnection() {
 const SECRET = process.env.SECRET || 'your-jwt-secret';
 const app = express();
 
-app.use(
-    cors({
-        origin: '*', // This allows all origins, but it's better to limit to your frontend's URL for production
-        methods: ['GET', 'POST'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    })
-);
+app.use(cors());
 
 app.use(express.json());
 
