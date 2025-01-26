@@ -32,7 +32,6 @@ app.use(cors());
 
 app.use(express.json());
 
-// Middleware for token authentication
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -48,14 +47,12 @@ function authenticateToken(req, res, next) {
 app.post('/registration', async (req, res) => {
     const { username, password } = req.body;
 
-    // Validate the input
     if (!username || !password) {
         return res
             .status(400)
             .json({ message: 'Username and password are required' });
     }
 
-    // Check if the username already exists
     try {
         const [rows] = await pool.execute(
             'SELECT * FROM users WHERE username = ?',
@@ -68,17 +65,14 @@ app.post('/registration', async (req, res) => {
                 .json({ message: 'Username is already taken' });
         }
 
-        // Hash the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Insert the new user into the database
         await pool.execute(
             'INSERT INTO users (username, password) VALUES (?, ?)',
             [username, hashedPassword]
         );
 
-        // Send a success response
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error('Error during registration:', error);
@@ -134,7 +128,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Get all movies
 app.get('/movies', async (req, res) => {
     try {
         const [movies] = await pool.execute('SELECT * FROM movies');
@@ -148,7 +141,6 @@ app.get('/movies', async (req, res) => {
     }
 });
 
-// Get movies by user
 app.get('/movies/user/:user_id', authenticateToken, async (req, res) => {
     const userId = parseInt(req.params.user_id, 10);
     if (isNaN(userId))
@@ -176,7 +168,6 @@ app.get('/movies/user/:user_id', authenticateToken, async (req, res) => {
     }
 });
 
-// Add movie
 app.post('/movies/user/:user_id', authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
     const { title, description, img_url } = req.body;
@@ -200,7 +191,6 @@ app.post('/movies/user/:user_id', authenticateToken, async (req, res) => {
     }
 });
 
-// Get single movie
 app.get('/movies/:movie_id', authenticateToken, async (req, res) => {
     const movie_id = Number(req.params.movie_id);
 
@@ -220,7 +210,6 @@ app.get('/movies/:movie_id', authenticateToken, async (req, res) => {
     }
 });
 
-// Update movie
 app.put(
     '/movies/update/:movie_id/:user_id',
     authenticateToken,
@@ -255,7 +244,6 @@ app.put(
     }
 );
 
-// Delete movie
 app.delete('/movies/:id', authenticateToken, async (req, res) => {
     const id = req.params.id;
 
@@ -273,7 +261,6 @@ app.delete('/movies/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// Initialize database before starting server
 async function startServer() {
     try {
         await initializeDbConnection();
